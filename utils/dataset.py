@@ -21,21 +21,21 @@ class ImageTransformOwn():
 class ImageTransform():
     # Image Transform and Preprocessing
     def __init__(self, size=286, crop_size=256, mean=(0.5, ), std=(0.5, )):
-        self.data_transform = {'train': transforms.Compose([transforms.Scale(size=size),
-                                                            transforms.RandomCrop(size=crop_size),
-                                                            transforms.RandomHorizontalFlip(p=0.5),
-                                                            transforms.ToTensor(),
-                                                            transforms.Normalize(mean, std)]),
+        self.data_transform = {'train': ISTD.Compose([ISTD.Scale(size=size),
+                                                            ISTD.RandomCrop(size=crop_size),
+                                                            ISTD.RandomHorizontalFlip(p=0.5),
+                                                            ISTD.ToTensor(),
+                                                            ISTD.Normalize(mean, std)]),
 
-                                'val': transforms.Compose([transforms.Scale(size=size),
-                                                           transforms.RandomCrop(size=crop_size),
-                                                           transforms.ToTensor(),
-                                                           transforms.Normalize(mean, std)]),
+                                'val': ISTD.Compose([ISTD.Scale(size=size),
+                                                           ISTD.RandomCrop(size=crop_size),
+                                                           ISTD.ToTensor(),
+                                                           ISTD.Normalize(mean, std)]),
 
-                                'test': transforms.Compose([transforms.Scale(size=size),
-                                                            transforms.RandomCrop(size=crop_size),
-                                                            transforms.ToTensor(),
-                                                            transforms.Normalize(mean, std)])}
+                                'test': ISTD.Compose([ISTD.Scale(size=size),
+                                                            ISTD.RandomCrop(size=crop_size),
+                                                            ISTD.ToTensor(),
+                                                            ISTD.Normalize(mean, std)])}
 
     def __call__(self, mode, img):
         return self.data_transform[mode](img)
