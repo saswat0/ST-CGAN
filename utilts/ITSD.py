@@ -13,26 +13,26 @@ import torchvision.transforms.functional as F
 class Scale(object):
     # Scale the image during augmentation
     def __init__(self, size, interpolation=Image.BILINEAR):
-    self.size = size
-    self.interpolation = interpolation
+        self.size = size
+        self.interpolation = interpolation
 
     def __call__(self, imgs):
-    output = []
-    for img in imgs:
-        w, h = img.size
-        if (w <= h and w == self.size) or (h <= w and h == self.size):
-        output.append(img)
-        continue
-        if w < h:
-        ow = self.size
-        oh = int(self.size * h / w)
-        output.append(img.resize((ow, oh), self.interpolation))
-        continue
-        else:
-        oh = self.size
-        ow = int(self.size * w / h)
-        output.append(img.resize((ow, oh), self.interpolation))
-    return output[0], output[1], output[2]
+        output = []
+        for img in imgs:
+            w, h = img.size
+            if (w <= h and w == self.size) or (h <= w and h == self.size):
+                output.append(img)
+                continue
+            if w < h:
+                ow = self.size
+                oh = int(self.size * h / w)
+                output.append(img.resize((ow, oh), self.interpolation))
+                continue
+            else:
+                oh = self.size
+                ow = int(self.size * w / h)
+            output.append(img.resize((ow, oh), self.interpolation))
+        return output[0], output[1], output[2]
 
 class ToTensor(object):
     def __call__(self, pic):
