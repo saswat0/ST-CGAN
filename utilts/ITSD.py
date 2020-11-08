@@ -88,3 +88,53 @@ class CenterCrop(torch.nn.Module):
 
     def __repr__(self):
         return self.__class__.__name__ + '(size={0})'.format(self.size)
+
+class RandomCrop(torch.nn.Module):
+    @staticmethod
+    def get_params(img: Tensor, output_size: Tuple[int, int]) -> Tuple[int, int, int, int]:
+        w, h = img.size
+        th, tw = output_size
+        if w == tw and h == th:
+            return 0, 0, h, w
+
+        i = torch.randint(0, h - th + 1, size=(1, )).item()
+        j = torch.randint(0, w - tw + 1, size=(1, )).item()
+        return i, j, th, tw
+
+    def __init__(self, size, padding=None, pad_if_needed=False, fill=0, padding_mode="constant"):
+        super().__init__()
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        elif isinstance(size, Sequence) and len(size) == 1:
+            self.size = (size[0], size[0])
+        else:
+            if len(size) != 2:
+                raise ValueError("Please provide only two dimensions (h, w) for size.")
+
+            # cast to tuple for torchscript
+            self.size = tuple(size)
+        self.padding = padding
+        self.pad_if_needed = pad_if_needed
+        self.fill = fill
+        self.padding_mode = padding_mode
+
+    def forward(self, img):
+        if self.padding is not None:
+            img[0] = F.pad(img[0], self.padding, self.fill, self.padding_mode)
+
+        width, height = img[0].size
+        # pad the width if needed
+        if self.pad_if_needed and width < self.size[1]:
+            padding = [self.size[1] - width, 0]
+            img[0] = F.pad(img[0], padding, self.fill, self.padding_mode)
+        # pad the height if needed
+        if self.pad_if_needed and height < self.size[0]:
+            padding = [0, self.size[0] - height]
+            img[0] = F.pad(img[0], padding, self.fill, self.padding_mode)
+
+        i, j, h, w = self.get_params(img[0], self.size)
+
+        return F.crop(img[0], i, j, h, w), F.crop(img[1], i, j, h, w), F.crop(img[2], i, j, h, w)
+
+    def __repr__(self):
+        return self.__class__.__name__ + "(size={0}, padding={1})".format(self.size, self.padding)
