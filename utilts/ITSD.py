@@ -69,3 +69,22 @@ class Normalize(object):
 
     def __repr__(self):
         return self.__class__.__name__ + '(mean={0}, std={1})'.format(self.mean, self.std)
+
+class CenterCrop(torch.nn.Module):
+    def __init__(self, size):
+        super().__init__()
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        elif isinstance(size, Sequence) and len(size) == 1:
+            self.size = (size[0], size[0])
+        else:
+            if len(size) != 2:
+                raise ValueError("Please provide only two dimensions (h, w) for size.")
+
+            self.size = size
+
+    def forward(self, img):
+        return F.center_crop(img[0], self.size), F.center_crop(img[1], self.size), F.center_crop(img[2], self.size)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(size={0})'.format(self.size)
