@@ -37,15 +37,15 @@ class ImageTransform():
                                                             transforms.ToTensor(),
                                                             transforms.Normalize(mean, std)])}
 
-    def __call__(self, phase, img):
-        return self.data_transform[phase](img)
+    def __call__(self, mode, img):
+        return self.data_transform[mode](img)
 
 class ImageDataset(data.Dataset):
     # Custom Dataset loader 
-    def __init__(self, img_list, img_transform, phase):
+    def __init__(self, img_list, img_transform, mode):
         self.img_list = img_list
         self.img_transform = img_transform
-        self.phase = phase
+        self.mode = mode
 
     def __len__(self):
         return len(self.img_list['path_A'])
@@ -56,7 +56,7 @@ class ImageDataset(data.Dataset):
         gt_shadow = Image.open(self.img_list['path_B'][index])
         gt = Image.open(self.img_list['path_C'][index]).convert('RGB')
 
-        img, gt_shadow, gt = self.img_transform(self.phase, [img, gt_shadow, gt])
+        img, gt_shadow, gt = self.img_transform(self.mode, [img, gt_shadow, gt])
 
         return img, gt_shadow, gt
 
