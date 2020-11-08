@@ -2,63 +2,57 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class Cvi(nn.Module):
-    def __init__(self, in_channels, out_channels, before=None, after=False, kernel_size=4, stride=2,
-                 padding=1, dilation=1, groups=1, bias=False):
-        super(Cvi, self).__init__()
-        self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias)
+from net.CV import CvTi, Cvi
 
-        if after=='BN':
-            self.after = nn.BatchNorm2d(out_channels)
-        elif after=='Tanh':
-            self.after = torch.tanh
-        elif after=='sigmoid':
-            self.after = torch.sigmoid
+class Generator(nn.Module):
+    def __init__(self, input_channels=3, output_channels=1):
+        super(Generator, self).__init__()
 
-        if before=='ReLU':
-            self.before = nn.ReLU(inplace=True)
-        elif before=='LReLU':
-            self.before = nn.LeakyReLU(negative_slope=0.2, inplace=True)
+        self.Cv0 = Cvi(input_channels, 64)
+        self.Cv1 = Cvi(64, 128, before='LReLU', after='BN')
+        self.Cv2 = Cvi(128, 256, before='LReLU', after='BN')
+        self.Cv3 = Cvi(256, 512, before='LReLU', after='BN')
+        self.Cv4 = Cvi(512, 512, before='LReLU', after='BN')
+        self.Cv5 = Cvi(512, 512, before='LReLU')
 
-    def forward(self, x):
+        self.CvT6 = CvTi(512, 512, before='ReLU', after='BN')
+        self.CvT7 = CvTi(1024, 512, before='ReLU', after='BN')
+        self.CvT8 = CvTi(1024, 256, before='ReLU', after='BN')
+        self.CvT9 = CvTi(512, 128, before='ReLU', after='BN')
+        self.CvT10 = CvTi(256, 64, before='ReLU', after='BN')
+        self.CvT11 = CvTi(128, output_channels, before='ReLU', after='Tanh')
 
-        if hasattr(self, 'before'):
-            x = self.before(x)
+    def forward(self, input):
+        # Encoder Network
+        out_0 = self.Cv0(input)
+        out_1 = self.Cv1(out_0)
+        out_2 = self.Cv2(out_1)
+        out_3 = self.Cv3(out_2)
+        out_4_1 = self.Cv4(out_3)
+        out_4_2 = self.Cv4(out_4_1)
+        out_4_3 = self.Cv4(out_4_2)
+        out_5 = self.Cv5(out_4_3)
 
-        x = self.conv(x)
+        # Decoder Network
+        out_6 = self.CvT6(out_5)
 
-        if hasattr(self, 'after'):
-            x = self.after(x)
+        cat1_1 = torch.cat([out_6, out_4_3], dim=1)
+        out_7_1 = self.CvT7(cat1_1)
+        cat1_2 = torch.cat([out_7_1, out_4_2], dim=1)
+        out_7_2 = self.CvT7(cat1_2)
+        cat1_3 = torch.cat([out_7_2, out_4_1], dim=1)
+        out_7_3 = self.CvT7(cat1_3)
 
-        return x
+        cat2 = torch.cat([out_7_3, out_3], dim=1)
+        out_8 = self.CvT8(cat2)
 
+        cat3 = torch.cat([out_8, out_2], dim=1)
+        out_9 = self.CvT9(cat3)
 
-class CvTi(nn.Module):
-    def __init__(self, in_channels, out_channels, before=None, after=False, kernel_size=4, stride=2,
-                 padding=1, dilation=1, groups=1, bias=False):
-        super(CvTi, self).__init__()
-        self.conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size, stride, padding, bias)
+        cat4 = torch.cat([out_9, out_1], dim=1)
+        out_10 = self.CvT10(cat4)
 
-        if after=='BN':
-            self.after = nn.BatchNorm2d(out_channels)
-        elif after=='Tanh':
-            self.after = torch.tanh
-        elif after=='sigmoid':
-            self.after = torch.sigmoid
+        cat5 = torch.cat([out_10, out_0], dim=1)
+        out = self.CvT11(cat5)
 
-        if before=='ReLU':
-            self.before = nn.ReLU(inplace=True)
-        elif before=='LReLU':
-            self.before = nn.LeakyReLU(negative_slope=0.2, inplace=True)
-
-    def forward(self, x):
-
-        if hasattr(self, 'before'):
-            x = self.before(x)
-
-        x = self.conv(x)
-
-        if hasattr(self, 'after'):
-            x = self.after(x)
-
-        return x
+        return out
