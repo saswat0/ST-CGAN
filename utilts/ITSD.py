@@ -89,6 +89,19 @@ class CenterCrop(torch.nn.Module):
     def __repr__(self):
         return self.__class__.__name__ + '(size={0})'.format(self.size)
 
+class RandomHorizontalFlip(torch.nn.Module):
+    def __init__(self, p=0.5):
+        super().__init__()
+        self.p = p
+
+    def forward(self, img):
+        if torch.rand(1) < self.p:
+            return F.hflip(img[0]), F.hflip(img[1]), F.hflip(img[2])
+        return img[0], img[1], img[2]
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(p={})'.format(self.p)
+        
 class RandomCrop(torch.nn.Module):
     @staticmethod
     def get_params(img: Tensor, output_size: Tuple[int, int]) -> Tuple[int, int, int, int]:
