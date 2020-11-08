@@ -75,3 +75,43 @@ class Discriminator(nn.Module):
         out = self.Cv4(out_3)
 
         return out
+
+# Testing Codes
+if __name__ == "__main__":
+    # BCHW
+    input_size = (3, 3, 256, 256)
+    input = torch.ones(input_size)
+    l1 = nn.L1Loss()
+    input.requires_grad = True
+
+    # Conv test
+    conv = Cvi(3, 3)
+    conv2 = Cvi(3, 3, before='ReLU', after='BN')
+    output = conv(input)
+    output2 = conv2(output)
+    # print(output.shape)
+    # print(output2.shape)
+    loss = l1(output, torch.randn(3, 3, 128, 128))
+    loss.backward()
+    # print(loss.item())
+
+    convT = CvTi(3, 3)
+    outputT = convT(output)
+    # print(outputT.shape)
+
+    #Generator test
+    model = Generator()
+    output = model(input)
+    # print(output.shape)
+    loss = l1(output, torch.randn(3, 1, 256, 256))
+    loss.backward()
+    # print(loss.item())
+
+    #Discriminator test
+    input_size = (3, 4, 256, 256)
+    input = torch.ones(input_size)
+    l1 = nn.L1Loss()
+    input.requires_grad = True
+    model = Discriminator()
+    output = model(input)
+    # print(output.shape)
