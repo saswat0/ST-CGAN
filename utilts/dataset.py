@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch.utils.data as data
 from torchvision import transforms
 
-from ITSD import transforms
+from . import ISTD
 
 class ImageTransformOwn():
     # Transformation for own images
