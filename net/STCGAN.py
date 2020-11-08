@@ -56,3 +56,22 @@ class Generator(nn.Module):
         out = self.CvT11(cat5)
 
         return out
+
+class Discriminator(nn.Module):
+    def __init__(self, input_channels=4):
+        super(Discriminator, self).__init__()
+
+        self.Cv0 = Cvi(input_channels, 64)
+        self.Cv1 = Cvi(64, 128, before='LReLU', after='BN')
+        self.Cv2 = Cvi(128, 256, before='LReLU', after='BN')
+        self.Cv3 = Cvi(256, 512, before='LReLU', after='BN')
+        self.Cv4 = Cvi(512, 1, before='LReLU', after='sigmoid')
+
+    def forward(self, input):
+        out_0 = self.Cv0(input)
+        out_1 = self.Cv1(out_0)
+        out_2 = self.Cv2(out_1)
+        out_3 = self.Cv3(out_2)
+        out = self.Cv4(out_3)
+
+        return out
